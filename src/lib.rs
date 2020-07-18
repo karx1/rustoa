@@ -70,3 +70,15 @@ impl Client {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    fn create_client() -> super::Client {
+        super::Client::new("1e48fa3b34a8ab86cbec44735c5b6055a141f245455faac878bfa204e35c1a7e".to_string())
+    }
+    #[test]
+    fn correct_version() {
+        let client = create_client();
+        assert_eq!("3.7.0", client.api_version());
+    }
+}
