@@ -1,8 +1,16 @@
+//! # RusTOA
+//!
+//! `rustoa` is a crate you can use to access The Orange Alliance API.
+//! This crate makes it easy to access the official First Tech Challenge API
+//! and use it in your Rust projects.
+
 use std::collections::HashMap;
 use reqwest::header::CONTENT_TYPE;
 use reqwest::blocking::Response;
 
-
+/// The main RusTOA client.
+///
+/// You can use the client to get the API version.
 pub struct Client {
     api_key: String,
     application_name: String,
@@ -21,12 +29,28 @@ impl Client {
 
         Ok(resp)
     }
+
+    /// Create a new Client object.
+    /// The only parameter this method takes is your Orange Alliance API key as a `String`.
+    /// It returns a Client object.
     pub fn new(api_key: String) -> Client {
         Client {
             api_key,
             application_name: "rustoa".to_string()
         }
     }
+
+    /// Get the version of The Orange Alliance API that this crate is using.
+    /// This method takes no arguments and returns the version as a String.
+    ///
+    /// # Panics
+    /// This method can panic in three ways:
+    /// - The HTTP request to the API fails. This can be because the API is either down or you are
+    /// being ratelimited.
+    /// - Serde cannot properly deserialize the JSON data in the response. This happens because the
+    /// API has sent invalid JSON.
+    /// - The HashMap does not have the needed keys to process the data. This happens because
+    /// the request was made to the wrong target or the API has sent back an error in JSON form.
     pub fn api_version(&self) -> String {
         let resp = match self.request("/") {
             Ok(resp) => resp,
