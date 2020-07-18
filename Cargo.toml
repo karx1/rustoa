@@ -6,7 +6,6 @@ authors = ["Yash Karandikar <nerdstep710@gmail.com>"]
 edition = "2018"
 readme = "README.md"
 license = "MIT"
-homepage = "https://github.com/karx1/rustoa"
 repository = "https://github.com/karx1/rustoa"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
