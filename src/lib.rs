@@ -4,9 +4,9 @@
 //! This crate makes it easy to access the official First Tech Challenge API
 //! and use it in your Rust projects.
 
-use std::collections::HashMap;
-use reqwest::header::CONTENT_TYPE;
 use reqwest::blocking::Response;
+use reqwest::header::CONTENT_TYPE;
+use std::collections::HashMap;
 
 /// The main RusTOA client.
 ///
@@ -49,7 +49,7 @@ impl Client {
     pub fn new(api_key: &str) -> Client {
         Client {
             api_key: api_key.to_string(),
-            application_name: "rustoa".to_string()
+            application_name: "rustoa".to_string(),
         }
     }
 
@@ -74,12 +74,12 @@ impl Client {
 
         let map = match resp.json::<HashMap<String, String>>() {
             Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match map.get("version") {
             Some(vers) => vers.to_string(),
-            None => panic!("Something went wrong with the API.")
+            None => panic!("Something went wrong with the API."),
         }
     }
     /// This method is used to get an instance of `Team`.
@@ -98,7 +98,7 @@ impl Client {
 /// Do not create this struct yourself. Instead use your `Client` instance.
 pub struct Team {
     client: Client,
-    pub team_number: u32
+    pub team_number: u32,
 }
 
 impl Team {
@@ -108,7 +108,7 @@ impl Team {
             // api_key: client.api_key().to_string(),
             // application_name: client.application_name().to_string(),
             client,
-            team_number
+            team_number,
         }
     }
     /// The total amount of times the team has won a match.
@@ -117,19 +117,22 @@ impl Team {
     ///
     /// It returns a `u32` integer.
     pub fn wins(&self) -> u32 {
-        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+        let resp = match self
+            .client
+            .request(&format!("/team/{}/wlt", self.team_number)[..])
+        {
             Ok(resp) => resp,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         let map = match resp.json::<Vec<HashMap<String, u32>>>() {
             Ok(m) => m[0].clone(),
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match map.get("wins") {
             Some(w) => w.clone(),
-            None => panic!("Something went wrong with the API.")
+            None => panic!("Something went wrong with the API."),
         }
     }
     /// The total amount of times the team has lost a match.
@@ -138,19 +141,22 @@ impl Team {
     ///
     /// It returns a `u32` integer.
     pub fn losses(&self) -> u32 {
-        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+        let resp = match self
+            .client
+            .request(&format!("/team/{}/wlt", self.team_number)[..])
+        {
             Ok(resp) => resp,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         let map = match resp.json::<Vec<HashMap<String, u32>>>() {
             Ok(m) => m[0].clone(),
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match map.get("losses") {
             Some(l) => l.clone(),
-            None => panic!("Something went wrong with the API.")
+            None => panic!("Something went wrong with the API."),
         }
     }
     /// The amount of times the team has tied a match.
@@ -159,19 +165,22 @@ impl Team {
     ///
     /// It returns a `u32` integer.
     pub fn ties(&self) -> u32 {
-        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+        let resp = match self
+            .client
+            .request(&format!("/team/{}/wlt", self.team_number)[..])
+        {
             Ok(resp) => resp,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         let map = match resp.json::<Vec<HashMap<String, u32>>>() {
             Ok(m) => m[0].clone(),
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match map.get("ties") {
             Some(t) => t.clone(),
-            None => panic!("Something went wrong with the API.")
+            None => panic!("Something went wrong with the API."),
         }
     }
 }
