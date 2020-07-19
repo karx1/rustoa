@@ -11,13 +11,15 @@ use reqwest::blocking::Response;
 /// The main RusTOA client.
 ///
 /// You can use the client to get the API version.
+#[derive(Clone)]
 pub struct Client {
     api_key: String,
     application_name: String,
 }
 
 impl Client {
-    fn request(&self, target: &str) -> Result<Response, Box<dyn std::error::Error>> {
+    #[doc(hidden)]
+    pub fn request(&self, target: &str) -> Result<Response, Box<dyn std::error::Error>> {
         let url = format!("https://theorangealliance.org/api{}", target);
         let client = reqwest::blocking::Client::new();
         let resp = client
