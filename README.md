@@ -6,7 +6,7 @@ A Crate to access The Orange Alliance API. This crate makes it easy to access th
 Install by adding
 ```toml
 [dependecies]
-rustoa = "0.1.0"
+rustoa = "0.1.2"
 ```
 
 to your `Cargo.toml` file.
