@@ -164,4 +164,18 @@ mod tests {
         let team = client.team(16405);
         assert_eq!(team.team_number, 16405);
     }
+    #[test]
+    fn check_compat() {
+        let client = create_client();
+        let team1 = client.team(16405);
+        let team2 = client.team(16405);
+        assert_eq!(team1.wins(), team2.wins());
+    }
+    #[test]
+    fn check_numbers() {
+        let client = create_client();
+        let team1 = client.team(16405);
+        let team2 = client.team(16405);
+        assert_eq!(team1.team_number, team2.team_number);
+    }
 }
