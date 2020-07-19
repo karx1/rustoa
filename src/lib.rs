@@ -31,6 +31,14 @@ impl Client {
 
         Ok(resp)
     }
+    #[doc(hidden)]
+    pub fn api_key(&self) -> &str {
+        &self.api_key[..]
+    }
+    #[doc(hidden)]
+    pub fn application_name(&self) -> &str {
+        &self.application_name[..]
+    }
 
     /// Create a new Client object.
     /// The only parameter this method takes is your Orange Alliance API key as a `String`.
@@ -68,6 +76,73 @@ impl Client {
 
         match map.get("version") {
             Some(vers) => vers.to_string(),
+            None => panic!("Something went wrong with the API.")
+        }
+    }
+    pub fn team(&self, team_number: u32) -> Team {
+        Team::new(team_number, self.clone())
+    }
+}
+
+pub struct Team {
+    client: Client,
+    pub team_number: u32
+}
+
+impl Team {
+    pub fn new(team_number: u32, client: Client) -> Team {
+        Team {
+            // api_key: client.api_key().to_string(),
+            // application_name: client.application_name().to_string(),
+            client,
+            team_number
+        }
+    }
+    pub fn wins(&self) -> u32 {
+        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+            Ok(resp) => resp,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match resp.json::<Vec<HashMap<String, u32>>>() {
+            Ok(m) => m[0].clone(),
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match map.get("wins") {
+            Some(w) => w.clone(),
+            None => panic!("Something went wrong with the API.")
+        }
+    }
+    pub fn losses(&self) -> u32 {
+        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+            Ok(resp) => resp,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match resp.json::<Vec<HashMap<String, u32>>>() {
+            Ok(m) => m[0].clone(),
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match map.get("losses") {
+            Some(l) => l.clone(),
+            None => panic!("Something went wrong with the API.")
+        }
+    }
+    pub fn ties(&self) -> u32 {
+        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+            Ok(resp) => resp,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match resp.json::<Vec<HashMap<String, u32>>>() {
+            Ok(m) => m[0].clone(),
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match map.get("ties") {
+            Some(t) => t.clone(),
             None => panic!("Something went wrong with the API.")
         }
     }
