@@ -41,7 +41,10 @@ impl Client {
     }
 
     /// Create a new Client object.
-    /// The only parameter this method takes is your Orange Alliance API key as a `String`.
+    /// # Arguments
+    ///
+    /// * `api_key` - Your Orange Alliance API key as a `String`.
+    ///
     /// It returns a Client object.
     pub fn new(api_key: &str) -> Client {
         Client {
@@ -79,17 +82,27 @@ impl Client {
             None => panic!("Something went wrong with the API.")
         }
     }
+    /// This method is used to get an instance of `Team`.
+    /// # Arguments
+    ///
+    /// * `team_number` - The FTC team number as a `u32` integer.
+    ///
+    /// It returns a Team object with the necessary data
     pub fn team(&self, team_number: u32) -> Team {
         Team::new(team_number, self.clone())
     }
 }
 
+/// A struct used to access an FTC team.
+///
+/// Do not create this struct yourself. Instead use your `Client` instance.
 pub struct Team {
     client: Client,
     pub team_number: u32
 }
 
 impl Team {
+    #[doc(hidden)]
     pub fn new(team_number: u32, client: Client) -> Team {
         Team {
             // api_key: client.api_key().to_string(),
@@ -98,6 +111,11 @@ impl Team {
             team_number
         }
     }
+    /// The total amount of times the team has won a match.
+    ///
+    /// This method takes no arguments.
+    ///
+    /// It returns a `u32` integer.
     pub fn wins(&self) -> u32 {
         let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
             Ok(resp) => resp,
@@ -114,6 +132,11 @@ impl Team {
             None => panic!("Something went wrong with the API.")
         }
     }
+    /// The total amount of times the team has lost a match.
+    ///
+    /// This method takes no arguments.
+    ///
+    /// It returns a `u32` integer.
     pub fn losses(&self) -> u32 {
         let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
             Ok(resp) => resp,
@@ -130,6 +153,11 @@ impl Team {
             None => panic!("Something went wrong with the API.")
         }
     }
+    /// The amount of times the team has tied a match.
+    ///
+    /// This method takes no arguments.
+    ///
+    /// It returns a `u32` integer.
     pub fn ties(&self) -> u32 {
         let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
             Ok(resp) => resp,
@@ -163,5 +191,19 @@ mod tests {
         let client = create_client();
         let team = client.team(16405);
         assert_eq!(team.team_number, 16405);
+    }
+    #[test]
+    fn check_compat() {
+        let client = create_client();
+        let team1 = client.team(16405);
+        let team2 = client.team(16405);
+        assert_eq!(team1.wins(), team2.wins());
+    }
+    #[test]
+    fn check_numbers() {
+        let client = create_client();
+        let team1 = client.team(16405);
+        let team2 = client.team(16405);
+        assert_eq!(team1.team_number, team2.team_number);
     }
 }
