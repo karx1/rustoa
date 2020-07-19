@@ -158,4 +158,10 @@ mod tests {
         let client = create_client();
         assert_eq!("3.7.0", client.api_version());
     }
+    #[test]
+    fn check_number() {
+        let client = create_client();
+        let team = client.team(16405);
+        assert_eq!(team.team_number, 16405);
+    }
 }
