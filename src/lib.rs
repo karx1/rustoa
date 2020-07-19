@@ -35,9 +35,9 @@ impl Client {
     /// Create a new Client object.
     /// The only parameter this method takes is your Orange Alliance API key as a `String`.
     /// It returns a Client object.
-    pub fn new(api_key: String) -> Client {
+    pub fn new(api_key: &str) -> Client {
         Client {
-            api_key,
+            api_key: api_key.to_string(),
             application_name: "rustoa".to_string()
         }
     }
@@ -76,7 +76,7 @@ impl Client {
 #[cfg(test)]
 mod tests {
     fn create_client() -> super::Client {
-        super::Client::new("1e48fa3b34a8ab86cbec44735c5b6055a141f245455faac878bfa204e35c1a7e".to_string())
+        super::Client::new("1e48fa3b34a8ab86cbec44735c5b6055a141f245455faac878bfa204e35c1a7e")
     }
     #[test]
     fn correct_version() {
