@@ -11,13 +11,15 @@ use reqwest::blocking::Response;
 /// The main RusTOA client.
 ///
 /// You can use the client to get the API version.
+#[derive(Clone)]
 pub struct Client {
     api_key: String,
     application_name: String,
 }
 
 impl Client {
-    fn request(&self, target: &str) -> Result<Response, Box<dyn std::error::Error>> {
+    #[doc(hidden)]
+    pub fn request(&self, target: &str) -> Result<Response, Box<dyn std::error::Error>> {
         let url = format!("https://theorangealliance.org/api{}", target);
         let client = reqwest::blocking::Client::new();
         let resp = client
@@ -29,13 +31,21 @@ impl Client {
 
         Ok(resp)
     }
+    #[doc(hidden)]
+    pub fn api_key(&self) -> &str {
+        &self.api_key[..]
+    }
+    #[doc(hidden)]
+    pub fn application_name(&self) -> &str {
+        &self.application_name[..]
+    }
 
     /// Create a new Client object.
     /// The only parameter this method takes is your Orange Alliance API key as a `String`.
     /// It returns a Client object.
-    pub fn new(api_key: String) -> Client {
+    pub fn new(api_key: &str) -> Client {
         Client {
-            api_key,
+            api_key: api_key.to_string(),
             application_name: "rustoa".to_string()
         }
     }
@@ -69,16 +79,89 @@ impl Client {
             None => panic!("Something went wrong with the API.")
         }
     }
+    pub fn team(&self, team_number: u32) -> Team {
+        Team::new(team_number, self.clone())
+    }
+}
+
+pub struct Team {
+    client: Client,
+    pub team_number: u32
+}
+
+impl Team {
+    pub fn new(team_number: u32, client: Client) -> Team {
+        Team {
+            // api_key: client.api_key().to_string(),
+            // application_name: client.application_name().to_string(),
+            client,
+            team_number
+        }
+    }
+    pub fn wins(&self) -> u32 {
+        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+            Ok(resp) => resp,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match resp.json::<Vec<HashMap<String, u32>>>() {
+            Ok(m) => m[0].clone(),
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match map.get("wins") {
+            Some(w) => w.clone(),
+            None => panic!("Something went wrong with the API.")
+        }
+    }
+    pub fn losses(&self) -> u32 {
+        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+            Ok(resp) => resp,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match resp.json::<Vec<HashMap<String, u32>>>() {
+            Ok(m) => m[0].clone(),
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match map.get("losses") {
+            Some(l) => l.clone(),
+            None => panic!("Something went wrong with the API.")
+        }
+    }
+    pub fn ties(&self) -> u32 {
+        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+            Ok(resp) => resp,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match resp.json::<Vec<HashMap<String, u32>>>() {
+            Ok(m) => m[0].clone(),
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match map.get("ties") {
+            Some(t) => t.clone(),
+            None => panic!("Something went wrong with the API.")
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     fn create_client() -> super::Client {
-        super::Client::new("1e48fa3b34a8ab86cbec44735c5b6055a141f245455faac878bfa204e35c1a7e".to_string())
+        super::Client::new("1e48fa3b34a8ab86cbec44735c5b6055a141f245455faac878bfa204e35c1a7e")
     }
     #[test]
     fn correct_version() {
         let client = create_client();
         assert_eq!("3.7.0", client.api_version());
+    }
+    #[test]
+    fn check_number() {
+        let client = create_client();
+        let team = client.team(16405);
+        assert_eq!(team.team_number, 16405);
     }
 }
