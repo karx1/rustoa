@@ -1,9 +1,11 @@
 pipeline {
 	agent { docker { image 'rust:latest' } }
 	stages {
-		stage('build') {
+		stage('Test') {
 			steps {
-				sh 'cargo --version'
+				sh 'cargo check'
+				sh 'cargo build'
+				sh 'cargo test'
 			}
 		}
 	}
