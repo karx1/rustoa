@@ -8,7 +8,6 @@ use reqwest::blocking::Response;
 use reqwest::header::CONTENT_TYPE;
 use std::collections::HashMap;
 use std::collections::hash_map::RandomState;
-use std::any::Any;
 
 /// The main RusTOA client.
 ///
@@ -243,11 +242,6 @@ impl Team {
 
         new_map
     }
-}
-
-enum Value {
-    Int(u32),
-    String(String),
 }
 
 #[cfg(test)]
