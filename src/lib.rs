@@ -6,8 +6,8 @@
 
 use reqwest::blocking::Response;
 use reqwest::header::CONTENT_TYPE;
-use std::collections::HashMap;
 use std::collections::hash_map::RandomState;
+use std::collections::HashMap;
 
 /// The main RusTOA client.
 ///
@@ -199,29 +199,32 @@ impl Team {
     /// - The data received from the API was invalid JSON
     /// - The data received was in the wrong format
     pub fn properties(&self) -> HashMap<String, String, RandomState> {
-        let resp = match self.client.request(&format!("/team/{}/", self.team_number)[..]) {
+        let resp = match self
+            .client
+            .request(&format!("/team/{}/", self.team_number)[..])
+        {
             Ok(resp) => resp,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         let map: serde_json::Value = match serde_json::from_str(&*match resp.text() {
             Ok(text) => text,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         }) {
             Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         let item = match map.as_array() {
             Some(n) => n,
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         };
 
         let value = item[0].clone();
 
         let new = match value.as_object() {
             Some(m) => m,
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         };
 
         let mut new_map: HashMap<String, String> = HashMap::new();
@@ -232,10 +235,10 @@ impl Team {
                 serde_json::Value::String(s) => s.clone(),
                 serde_json::Value::Number(n) => match n.as_u64() {
                     Some(u) => u.to_string(),
-                    None => panic!("Something went wrong")
-                }
+                    None => panic!("Something went wrong"),
+                },
                 serde_json::Value::Null => "null".to_string(),
-                _ => panic!("Something went wrong")
+                _ => panic!("Something went wrong"),
             };
             new_map.insert(key, value);
         }
@@ -268,11 +271,11 @@ mod tests {
         assert_eq!(team1.wins(), team2.wins());
         let year1 = match team1.properties().get("rookie_year") {
             Some(y) => y.clone(),
-            None => panic!("Somethign went wrong")
+            None => panic!("Somethign went wrong"),
         };
         let year2 = match team2.properties().get("rookie_year") {
             Some(y) => y.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         };
         assert_eq!(year1, year2);
     }
@@ -289,7 +292,7 @@ mod tests {
         let team = client.team(16405);
         let year = match team.properties().get("rookie_year") {
             Some(y) => y.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         };
         assert_eq!("2019", year);
     }
