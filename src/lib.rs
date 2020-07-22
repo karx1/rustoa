@@ -12,7 +12,8 @@ use std::any::Any;
 
 /// The main RusTOA client.
 ///
-/// You can use the client to get the API version.
+/// You can use the [Client](struct.Client.html) to get the API version
+/// and create a [Team](struct.Team.html) object.
 #[derive(Clone)]
 pub struct Client {
     api_key: String,
@@ -47,7 +48,7 @@ impl Client {
     ///
     /// * `api_key` - Your Orange Alliance API key as a `String`.
     ///
-    /// It returns a Client object.
+    /// It returns a [Client](struct.Client.html) object.
     pub fn new(api_key: &str) -> Client {
         Client {
             api_key: api_key.to_string(),
@@ -84,12 +85,12 @@ impl Client {
             None => panic!("Something went wrong with the API."),
         }
     }
-    /// This method is used to get an instance of `Team`.
+    /// This method is used to get an instance of [`Team`](struct.Team.html).
     /// # Arguments
     ///
     /// * `team_number` - The FTC team number as a `u32` integer.
     ///
-    /// It returns a Team object with the necessary data
+    /// It returns a [Team](struct.Team.html) object with the necessary data.
     pub fn team(&self, team_number: u32) -> Team {
         Team::new(team_number, self.clone())
     }
@@ -97,7 +98,7 @@ impl Client {
 
 /// A struct used to access an FTC team.
 ///
-/// Do not create this struct yourself. Instead use your `Client` instance.
+/// Do not create this struct yourself. Instead use your [`Client`](struct.Client.html) instance.
 pub struct Team {
     client: Client,
     pub team_number: u32,
