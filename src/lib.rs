@@ -266,6 +266,15 @@ mod tests {
         let team1 = client.team(16405);
         let team2 = client.team(16405);
         assert_eq!(team1.wins(), team2.wins());
+        let year1 = match team1.properties().get("rookie_year") {
+            Some(y) => y.clone(),
+            None => panic!("Somethign went wrong")
+        };
+        let year2 = match team2.properties().get("rookie_year") {
+            Some(y) => y.clone(),
+            None => panic!("Something went wrong")
+        };
+        assert_eq!(year1, year2);
     }
     #[test]
     fn check_numbers() {
@@ -273,5 +282,15 @@ mod tests {
         let team1 = client.team(16405);
         let team2 = client.team(16405);
         assert_eq!(team1.team_number, team2.team_number);
+    }
+    #[test]
+    fn test_property() {
+        let client = create_client();
+        let team = client.team(16405);
+        let year = match team.properties().get("rookie_year") {
+            Some(y) => y.clone(),
+            None => panic!("Something went wrong")
+        };
+        assert_eq!("2019", year);
     }
 }
