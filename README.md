@@ -21,7 +21,7 @@ to your `Cargo.toml` file.
 To use the development version, add
 ```toml
 [dependencies]
-rustoa = { git = "https://gtihub.com/karx1/rustoa" }
+rustoa = { git = "https://github.com/karx1/rustoa" }
 ```
 
 to your Cargo.toml file. This version might be unstable.
