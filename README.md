@@ -4,7 +4,7 @@
 [![crates.io](https://img.shields.io/crates/v/rustoa.svg)](https://crates.io/crates/rustoa)
 [![Documentation](https://docs.rs/rustoa/badge.svg)](https://docs.rs/rustoa)
 [![MIT licensed](https://img.shields.io/crates/l/rustoa.svg)](./LICENSE.md)
-[![Build Status](https://travis-ci.com/karx1/rustoa.svg?branch=master)](https://travis-ci.com/karx1/rustoa)
+[![Build Status](http://ci.karx.xyz/buildStatus/icon?job=rustoa)](http://ci.karx.xyz/job/rustoa/)
 
 Rust bindings to The Orange Alliance API
 

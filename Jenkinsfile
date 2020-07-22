@@ -21,6 +21,9 @@ pipeline {
 	}
 	post {
 		success {
+			withCredentials([string(credentialsId: 'cargo-token', variable: 'TOKEN')]) {
+				sh 'cargo login $TOKEN || true'
+				sh 'cargo publish || true'
 			setBuildStatus("Build succeeded", "SUCCESS");
 		}
 		failure {
