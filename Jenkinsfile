@@ -15,7 +15,9 @@ pipeline {
 		stage('Test') {
 			steps {
 				setBuildStatus("Build pending", "PENDING");
-				sh 'cargo test'
+				withCredentials([string(credentialsId: 'toa-key', variable: 'API_KEY')]) {
+					sh 'cargo test'
+				}
 			}
 		}
 	}

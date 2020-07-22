@@ -250,7 +250,11 @@ impl Team {
 #[cfg(test)]
 mod tests {
     fn create_client() -> super::Client {
-        super::Client::new("1e48fa3b34a8ab86cbec44735c5b6055a141f245455faac878bfa204e35c1a7e")
+        let key = match std::env::var("API_KEY") {
+            Ok(k) => k,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        super::Client::new(&*key)
     }
     #[test]
     fn correct_version() {
