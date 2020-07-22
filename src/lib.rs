@@ -7,6 +7,8 @@
 use reqwest::blocking::Response;
 use reqwest::header::CONTENT_TYPE;
 use std::collections::HashMap;
+use std::collections::hash_map::RandomState;
+use std::any::Any;
 
 /// The main RusTOA client.
 ///
@@ -183,6 +185,68 @@ impl Team {
             None => panic!("Something went wrong with the API."),
         }
     }
+
+    /// Basic information of the team.
+    ///
+    /// This method takes no arguments.
+    ///
+    /// It returns a `HashMap<String, String>`.
+    ///
+    /// # Panics
+    ///
+    /// This method can panic in the following ways:
+    /// - The HTTP request was not successful
+    /// - The data received from the API was invalid JSON
+    /// - The data received was in the wrong format
+    pub fn properties(&self) -> HashMap<String, String, RandomState> {
+        let resp = match self.client.request(&format!("/team/{}/", self.team_number)[..]) {
+            Ok(resp) => resp,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map: serde_json::Value = match serde_json::from_str(&*match resp.text() {
+            Ok(text) => text,
+            Err(e) => panic!("Something went wrong: {}", e)
+        }) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let item = match map.as_array() {
+            Some(n) => n,
+            None => panic!("Something went wrong")
+        };
+
+        let value = item[0].clone();
+
+        let new = match value.as_object() {
+            Some(m) => m,
+            None => panic!("Something went wrong")
+        };
+
+        let mut new_map: HashMap<String, String> = HashMap::new();
+
+        for x in new.iter() {
+            let key = x.0.clone();
+            let value = match x.1 {
+                serde_json::Value::String(s) => s.clone(),
+                serde_json::Value::Number(n) => match n.as_u64() {
+                    Some(u) => u.to_string(),
+                    None => panic!("Something went wrong")
+                }
+                serde_json::Value::Null => "null".to_string(),
+                _ => panic!("Something went wrong")
+            };
+            new_map.insert(key, value);
+        }
+
+        new_map
+    }
+}
+
+enum Value {
+    Int(u32),
+    String(String),
 }
 
 #[cfg(test)]
