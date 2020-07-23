@@ -240,10 +240,55 @@ impl Team {
                 serde_json::Value::Null => "null".to_string(),
                 _ => panic!("Something went wrong"),
             };
+            let key_orig = key.clone();
+            if key == "last_active".to_string() {
+                let season = Season::value_of(value.clone());
+                let season = format!("{}", season);
+                new_map.insert(key_orig, season);
+                continue;
+            }
             new_map.insert(key, value);
         }
 
         new_map
+    }
+}
+
+pub enum Season {
+    SkyStone,
+    RoverRuckus,
+    RelicRecovery,
+    VelocityVortex,
+}
+
+impl Season {
+    pub fn value(&self) -> i32 {
+        match self {
+            Season::SkyStone => 1920,
+            Season::RoverRuckus => 1819,
+            Season::RelicRecovery => 1718,
+            Season::VelocityVortex => 1617
+        }
+    }
+    pub fn value_of(s: String) -> Season {
+        match &s[..] {
+            "1920" => Season::SkyStone,
+            "1819" => Season::RoverRuckus,
+            "1718" => Season::RelicRecovery,
+            "1617" => Season::VelocityVortex,
+            _ => panic!("That season does not exist in the TOA database.")
+        }
+    }
+}
+
+impl std::fmt::Display for Season {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Season::SkyStone => write!(f, "Season::SkyStone"),
+            Season::RoverRuckus => write!(f, "Season::RoverRuckus"),
+            Season::RelicRecovery => write!(f, "Season::RelicRecovery"),
+            Season::VelocityVortex => write!(f, "Season::VelocityVortex")
+        }
     }
 }
 
