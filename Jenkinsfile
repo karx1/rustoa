@@ -10,13 +10,18 @@ void setBuildStatus(String message, String state) {
 
 
 pipeline {
-	agent { docker { image 'rust:latest' } }
+	agent {
+		docker {
+			image 'rust:latest'
+			args '-v $HOME/rust/rustoa/target:/target -v $HOME/rust/rustoa/cargo:/root/.cargo'
+		}
+	}
 	stages {
 		stage('Test') {
 			steps {
 				setBuildStatus("Build pending", "PENDING");
 				withCredentials([string(credentialsId: 'toa-key', variable: 'API_KEY')]) {
-					sh 'cargo test'
+					sh 'cargo test --target-dir /target'
 				}
 			}
 		}
@@ -25,7 +30,7 @@ pipeline {
 		success {
 			withCredentials([string(credentialsId: 'cargo-token', variable: 'TOKEN')]) {
 				sh 'cargo login $TOKEN || true'
-				sh 'cargo publish || true'
+				sh 'cargo publish --target-dir /target || true'
 			}
 			setBuildStatus("Build succeeded", "SUCCESS");
 		}
