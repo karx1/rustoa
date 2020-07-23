@@ -252,7 +252,7 @@ mod tests {
     fn create_client() -> super::Client {
         let key = match std::env::var("API_KEY") {
             Ok(k) => k,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
         super::Client::new(&*key)
     }
