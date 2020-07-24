@@ -99,7 +99,8 @@ impl Client {
 ///
 /// Do not create this struct yourself. Instead use your [`Client`](struct.Client.html) instance.
 pub struct Team {
-    client: Client,
+    #[doc(hidden)]
+    pub client: Client,
     pub team_number: u32,
 }
 
@@ -276,6 +277,15 @@ impl Team {
         Ok(new_map)
     }
 
+    /// The amount of times the team has won in a particular season
+    ///
+    /// # Arguments
+    ///
+    /// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API was in the wrong format.
     pub fn season_wins(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
@@ -288,6 +298,15 @@ impl Team {
         }
     }
 
+    /// The amount of times the team has lost in a particular season
+    ///
+    /// # Arguments
+    ///
+    /// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API was in the wrong format.
     pub fn season_losses(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
@@ -300,6 +319,15 @@ impl Team {
         }
     }
 
+    /// The amount of times the team has tied a match in a particular season
+    ///
+    /// # Arguments
+    ///
+    /// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API was in the wrong format.
     pub fn season_ties(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
@@ -312,6 +340,20 @@ impl Team {
         }
     }
 
+    /// OPR stands for Offensive Power Rating.
+    ///
+    /// This is a system that attempts
+    /// to deduce the average point contribution of a team to an alliance.
+    ///
+    /// Penalties are also factored in.
+    ///
+    /// # Arguments
+    ///
+    /// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API was in the wrong format.
     pub fn opr(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
@@ -324,6 +366,15 @@ impl Team {
         }
     }
 
+    /// NP_OPR is the OPR without penalties.
+    ///
+    /// # Arguments
+    ///
+    /// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API was in the wrong format.
     pub fn np_opr(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
@@ -336,57 +387,19 @@ impl Team {
         }
     }
 
-    /// NP_OPR is the OPR without panlaties.
-///
-/// # Arguments
-///
-/// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
-///
-/// # Panics
-///
-/// This method will panic if the data sent by the API was in the wrong format.
-    pub fn rank(&self, season: Season) -> f64 {
-        let data = match self.get_season_data(season) {
-            Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
-        };
-
-        match data.get("rank") {
-            Some(d) => d.clone(),
-            None => panic!("Something went wrong")
-        }
-    }
-
-    /// NP_OPR is the OPR without panlaties.
-///
-/// # Arguments
-///
-/// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
-///
-/// # Panics
-///
-/// This method will panic if the data sent by the API was in the wrong format.
-    pub fn rank_change(&self, season: Season) -> f64 {
-        let data = match self.get_season_data(season) {
-            Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
-        };
-
-        match data.get("rank_change") {
-            Some(d) => d.clone(),
-            None => panic!("Something went wrong")
-        }
-    }
-
-    /// NP_OPR is the OPR without panlaties.
-///
-/// # Arguments
-///
-/// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
-///
-/// # Panics
-///
-/// This method will panic if the data sent by the API was in the wrong format.
+    /// Ranking points are the number of points scored by the
+    /// losing alliance in a qualification match.
+    /// If you win the match, then the RP awarded to you is the score of
+    /// your opponent alliance (which lost).
+    /// If you lose the match, then the RP awarded to you is your own alliance’s score.
+    ///
+    /// # Arguments
+    ///
+    /// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API was in the wrong format.
     pub fn ranking_points(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
@@ -399,15 +412,17 @@ impl Team {
         }
     }
 
-    /// NP_OPR is the OPR without panlaties.
-///
-/// # Arguments
-///
-/// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
-///
-/// # Panics
-///
-/// This method will panic if the data sent by the API was in the wrong format.
+    /// Winning teams of a qualifying match each receive 2 QP.
+    /// Losing teams receive 0. If a match ends in a tie,
+    /// all four teams receive 1 QP.
+    ///
+    /// # Arguments
+    ///
+    /// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API was in the wrong format.
     pub fn qualifying_points(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
@@ -420,7 +435,8 @@ impl Team {
         }
     }
 
-    /// NP_OPR is the OPR without panlaties.
+    /// Tiebreaker points are the pre-penalty score of the losing alliance for each match.
+    /// This method returns the total tiebreaker points of a team in one season.
     ///
     /// # Arguments
     ///
@@ -442,6 +458,16 @@ impl Team {
     }
 }
 
+/// This enum is used for expressing FTC seasons.
+///
+/// Do not create instances, instead just pass the types to methods
+/// which require you to provide a season.
+///
+/// For example:
+///
+/// ```text
+/// let wins = team.season_wins(rustoa::Season::SkyStone);
+/// ```
 pub enum Season {
     SkyStone,
     RoverRuckus,
@@ -450,6 +476,7 @@ pub enum Season {
 }
 
 impl Season {
+    #[doc(hidden)]
     pub fn value(&self) -> i32 {
         match self {
             Season::SkyStone => 1920,
@@ -458,6 +485,7 @@ impl Season {
             Season::VelocityVortex => 1617
         }
     }
+    #[doc(hidden)]
     pub fn value_of(s: String) -> Season {
         match &s[..] {
             "1920" => Season::SkyStone,
