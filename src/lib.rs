@@ -252,6 +252,89 @@ impl Team {
 
         new_map
     }
+    fn get_season_data(&self, season: Season) -> Result<HashMap<String, f64, RandomState>, Box<dyn std::error::Error>> {
+        let season = season.value();
+        let resp = self.client.request(&format!("/team/{}/results/{}", self.team_number, season)[..])?;
+        let map: serde_json::Value = serde_json::from_str(&*resp.text()?)?;
+        let queries = vec!["wins", "losses", "ties", "opr", "np_opr"];
+        let mut new_map: HashMap<String, f64> = HashMap::new();
+
+        let new = match map.as_array() {
+            Some(n) => n[0].clone(),
+            None => panic!("Something went wrong with the API")
+        };
+
+        for query in queries.iter() {
+            let query = query.to_string();
+            let val = new.clone();
+            let val = &val[&query];
+            new_map.insert(query, match val.as_f64() {
+                Some(u) => u,
+                None => panic!("Something went wrong")
+            });
+        }
+        Ok(new_map)
+    }
+
+    pub fn season_wins(&self, season: Season) -> f64 {
+        let data = match self.get_season_data(season) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match data.get("wins") {
+            Some(d) => d.clone(),
+            None => panic!("Something went wrong")
+        }
+    }
+
+    pub fn season_losses(&self, season: Season) -> f64 {
+        let data = match self.get_season_data(season) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match data.get("losses") {
+            Some(d) => d.clone(),
+            None => panic!("Something went wrong")
+        }
+    }
+
+    pub fn season_ties(&self, season: Season) -> f64 {
+        let data = match self.get_season_data(season) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match data.get("ties") {
+            Some(d) => d.clone(),
+            None => panic!("Something went wrong")
+        }
+    }
+
+    pub fn opr(&self, season: Season) -> f64 {
+        let data = match self.get_season_data(season) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match data.get("opr") {
+            Some(d) => d.clone(),
+            None => panic!("Something went wrong")
+        }
+    }
+
+    pub fn np_opr(&self, season: Season) -> f64 {
+        let data = match self.get_season_data(season) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match data.get("np_opr") {
+            Some(d) => d.clone(),
+            None => panic!("Something went wrong")
+        }
+    }
 }
 
 pub enum Season {
