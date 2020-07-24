@@ -335,6 +335,111 @@ impl Team {
             None => panic!("Something went wrong")
         }
     }
+
+    /// NP_OPR is the OPR without panlaties.
+///
+/// # Arguments
+///
+/// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+///
+/// # Panics
+///
+/// This method will panic if the data sent by the API was in the wrong format.
+    pub fn rank(&self, season: Season) -> f64 {
+        let data = match self.get_season_data(season) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match data.get("rank") {
+            Some(d) => d.clone(),
+            None => panic!("Something went wrong")
+        }
+    }
+
+    /// NP_OPR is the OPR without panlaties.
+///
+/// # Arguments
+///
+/// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+///
+/// # Panics
+///
+/// This method will panic if the data sent by the API was in the wrong format.
+    pub fn rank_change(&self, season: Season) -> f64 {
+        let data = match self.get_season_data(season) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match data.get("rank_change") {
+            Some(d) => d.clone(),
+            None => panic!("Something went wrong")
+        }
+    }
+
+    /// NP_OPR is the OPR without panlaties.
+///
+/// # Arguments
+///
+/// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+///
+/// # Panics
+///
+/// This method will panic if the data sent by the API was in the wrong format.
+    pub fn ranking_points(&self, season: Season) -> f64 {
+        let data = match self.get_season_data(season) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match data.get("ranking_points") {
+            Some(d) => d.clone(),
+            None => panic!("Something went wrong")
+        }
+    }
+
+    /// NP_OPR is the OPR without panlaties.
+///
+/// # Arguments
+///
+/// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+///
+/// # Panics
+///
+/// This method will panic if the data sent by the API was in the wrong format.
+    pub fn qualifying_points(&self, season: Season) -> f64 {
+        let data = match self.get_season_data(season) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match data.get("qualifying_points") {
+            Some(d) => d.clone(),
+            None => panic!("Something went wrong")
+        }
+    }
+
+    /// NP_OPR is the OPR without panlaties.
+    ///
+    /// # Arguments
+    ///
+    /// * [`season: Season`](enum.Season.html) - A rustoa `Season` object.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API was in the wrong format.
+    pub fn tiebreaker_points(&self, season: Season) -> f64 {
+        let data = match self.get_season_data(season) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        match data.get("np_opr") {
+            Some(d) => d.clone(),
+            None => panic!("Something went wrong")
+        }
+    }
 }
 
 pub enum Season {
