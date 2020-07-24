@@ -465,7 +465,8 @@ impl Team {
 ///
 /// For example:
 ///
-/// ```text
+/// ```no_run
+/// # let team = rustoa::Team::new(16405, rustoa::Client::new("api_key"));
 /// let wins = team.season_wins(rustoa::Season::SkyStone);
 /// ```
 pub enum Season {
