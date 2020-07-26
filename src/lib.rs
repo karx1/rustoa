@@ -267,7 +267,7 @@ impl Team {
 
         let new_vec = match map.as_array() {
             Some(n) => n.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         };
 
         for query in queries.iter() {
@@ -278,7 +278,7 @@ impl Team {
                 let val = &val[&query];
                 let num = match val.as_f64() {
                     Some(n) => n,
-                    None => panic!("Something went wrong")
+                    None => panic!("Something went wrong"),
                 };
                 i += num;
             }
