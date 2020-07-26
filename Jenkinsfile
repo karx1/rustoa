@@ -32,9 +32,11 @@ pipeline {
 				sh 'cargo login $TOKEN || true'
 				sh 'cargo publish --target-dir /target || true'
 			}
+			discordSend webhookURL: "https://discordapp.com/api/webhooks/736987984632479795/bmLFno9MJabEcfgqsnuGGiyIzCPVaUT6X5s45N3_RNmJt0kA1H75seTrNt_USRBlrYmk", title: "Jenkins Pipeline Build", link: env.BUILD_URL, result: currentBuild.currentResult, footer: "rustoa", description: "Build SUCCESS"
 			setBuildStatus("Build succeeded", "SUCCESS");
 		}
 		failure {
+			discordSend webhookURL: "https://discordapp.com/api/webhooks/736987984632479795/bmLFno9MJabEcfgqsnuGGiyIzCPVaUT6X5s45N3_RNmJt0kA1H75seTrNt_USRBlrYmk", title: "Jenkins Pipeline Build", link: env.BUILD_URL, result: currentBuild.currentResult, footer: "rustoa", description: "Build FAILURE"
 			setBuildStatus("Build failed", "FAILURE");
 		}
 	}
