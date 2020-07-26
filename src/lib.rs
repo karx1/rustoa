@@ -562,4 +562,10 @@ mod tests {
         };
         assert_eq!("2019", year);
     }
+
+    #[test]
+    fn test_season() {
+        let season = super::Season::SkyStone;
+        assert_eq!(season.value(), 1920);
+    }
 }
