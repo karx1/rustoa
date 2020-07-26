@@ -265,23 +265,27 @@ impl Team {
         let queries = vec!["wins", "losses", "ties", "opr", "np_opr"];
         let mut new_map: HashMap<String, f64> = HashMap::new();
 
-        let new = match map.as_array() {
-            Some(n) => n[0].clone(),
-            None => panic!("Something went wrong with the API"),
+        let new_vec = match map.as_array() {
+            Some(n) => n.clone(),
+            None => panic!("Something went wrong")
         };
 
         for query in queries.iter() {
             let query = query.to_string();
-            let val = new.clone();
-            let val = &val[&query];
-            new_map.insert(
-                query,
-                match val.as_f64() {
-                    Some(u) => u,
-                    None => panic!("Something went wrong"),
-                },
-            );
+            let mut i = 0 as f64;
+            for val in new_vec.iter() {
+                let val = val.clone();
+                let val = &val[&query];
+                let num = match val.as_f64() {
+                    Some(n) => n,
+                    None => panic!("Something went wrong")
+                };
+                i += num;
+            }
+            i = (i * 100.0).round() / 100.0;
+            new_map.insert(query, i);
         }
+
         Ok(new_map)
     }
 
