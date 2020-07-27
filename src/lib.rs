@@ -646,6 +646,15 @@ mod tests {
             None => panic!("Something went wrong"),
         };
         assert_eq!(year1, year2);
+        let event1 = match team1.events(super::Season::SkyStone).get("trinity_river_qualifier") {
+            Some(e) => e.clone(),
+            None => panic!("No value was found")
+        };
+        let event2 = match team2.events(super::Season::SkyStone).get("trinity_river_qualifier") {
+            Some(e) => e.clone(),
+            None => panic!("No value was found")
+        };
+        assert_eq!(event1.name(), event2.name());
     }
     #[test]
     fn check_numbers() {
@@ -669,5 +678,16 @@ mod tests {
     fn test_season() {
         let season = super::Season::SkyStone;
         assert_eq!(season.value(), 1920);
+    }
+
+    #[test]
+    fn test_event_name() {
+        let client = create_client();
+        let team = client.team(16405);
+        let event = match team.events(super::Season::SkyStone).get("trinity_river_qualifier") {
+            Some(e) => e.clone(),
+            None => panic!("No value was found")
+        };
+        assert_eq!("Trinity River Qualifier".to_string(), event.name());
     }
 }
