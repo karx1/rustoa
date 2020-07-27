@@ -13,7 +13,7 @@ use std::collections::HashMap;
 ///
 /// You can use the [Client](struct.Client.html) to get the API version
 /// and create a [Team](struct.Team.html) object.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Client {
     api_key: String,
     application_name: String,
@@ -253,27 +253,39 @@ impl Team {
 
         new_map
     }
-    fn get_season_data(&self, season: Season) -> Result<HashMap<String, f64, RandomState>, Box<dyn std::error::Error>> {
+    fn get_season_data(
+        &self,
+        season: Season,
+    ) -> Result<HashMap<String, f64, RandomState>, Box<dyn std::error::Error>> {
         let season = season.value();
-        let resp = self.client.request(&format!("/team/{}/results/{}", self.team_number, season)[..])?;
+        let resp = self
+            .client
+            .request(&format!("/team/{}/results/{}", self.team_number, season)[..])?;
         let map: serde_json::Value = serde_json::from_str(&*resp.text()?)?;
         let queries = vec!["wins", "losses", "ties", "opr", "np_opr"];
         let mut new_map: HashMap<String, f64> = HashMap::new();
 
-        let new = match map.as_array() {
-            Some(n) => n[0].clone(),
-            None => panic!("Something went wrong with the API")
+        let new_vec = match map.as_array() {
+            Some(n) => n.clone(),
+            None => panic!("Something went wrong"),
         };
 
         for query in queries.iter() {
             let query = query.to_string();
-            let val = new.clone();
-            let val = &val[&query];
-            new_map.insert(query, match val.as_f64() {
-                Some(u) => u,
-                None => panic!("Something went wrong")
-            });
+            let mut i = 0 as f64;
+            for val in new_vec.iter() {
+                let val = val.clone();
+                let val = &val[&query];
+                let num = match val.as_f64() {
+                    Some(n) => n,
+                    None => panic!("Something went wrong"),
+                };
+                i += num;
+            }
+            i = (i * 100.0).round() / 100.0;
+            new_map.insert(query, i);
         }
+
         Ok(new_map)
     }
 
@@ -289,12 +301,12 @@ impl Team {
     pub fn season_wins(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match data.get("wins") {
             Some(d) => d.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         }
     }
 
@@ -310,12 +322,12 @@ impl Team {
     pub fn season_losses(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match data.get("losses") {
             Some(d) => d.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         }
     }
 
@@ -331,12 +343,12 @@ impl Team {
     pub fn season_ties(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match data.get("ties") {
             Some(d) => d.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         }
     }
 
@@ -357,12 +369,12 @@ impl Team {
     pub fn opr(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match data.get("opr") {
             Some(d) => d.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         }
     }
 
@@ -378,12 +390,12 @@ impl Team {
     pub fn np_opr(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match data.get("np_opr") {
             Some(d) => d.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         }
     }
 
@@ -403,12 +415,12 @@ impl Team {
     pub fn ranking_points(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match data.get("ranking_points") {
             Some(d) => d.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         }
     }
 
@@ -426,12 +438,12 @@ impl Team {
     pub fn qualifying_points(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match data.get("qualifying_points") {
             Some(d) => d.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         }
     }
 
@@ -448,11 +460,101 @@ impl Team {
     pub fn tiebreaker_points(&self, season: Season) -> f64 {
         let data = match self.get_season_data(season) {
             Ok(m) => m,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         match data.get("np_opr") {
             Some(d) => d.clone(),
+            None => panic!("Something went wrong"),
+        }
+    }
+
+    pub fn events(&self, season: Season) -> HashMap<String, Event, RandomState> {
+        let resp = match self.client.request(&format!("/team/{}/events/{}", self.team_number, season.value())[..]) {
+            Ok(r) => match r.text() {
+                Ok(t) => t,
+                Err(e) => panic!("Something went wrong: {}", e)
+            },
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        let json: serde_json::Value = match serde_json::from_str(&*resp) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match json.as_array() {
+            Some(m) => m,
+            None => panic!("Something went wrong")
+        };
+
+        let mut keys = Vec::new();
+
+        for val in map.iter() {
+            let key = match val["event_key"].as_str() {
+                Some(k) => k.to_string(),
+                None => panic!("Something went wrong")
+            };
+            keys.push(key);
+        }
+
+        let mut emap: HashMap<String, Event> = HashMap::new();
+
+        for key in keys.iter() {
+            let event_key = key.clone();
+            let event = Event::new(&*key.clone(), &self.client);
+            let raw_key = event.name();
+            let mut key = raw_key.replace(" ", "_");
+            key = key.to_lowercase();
+            if emap.contains_key(&key[..]) {
+                let re = regex::Regex::new(r"\d{4}-\w+-").unwrap();
+                let raw_key_right = re.replace_all(&event_key[..], "");
+                key = format!("{}_{}", key, raw_key_right.to_lowercase());
+            }
+            emap.insert(key, event);
+        }
+
+        emap
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Event {
+    pub event_key: String,
+    client: Client,
+}
+
+impl Event {
+    pub fn new(event_key: &str, client: &Client) -> Event {
+        let event_key = event_key.to_string();
+        let client = client.clone();
+
+        Event {
+            event_key,
+            client
+        }
+    }
+
+    pub fn name(&self) -> String {
+        let resp = match self.client.request(&*format!("/event/{}", self.event_key)) {
+            Ok(r) => match r.text() {
+                Ok(t) => t,
+                Err(e) => panic!("Something went wrong: {}", e)
+            },
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let json: serde_json::Value = match serde_json::from_str(&resp[..]) {
+            Ok(v) => v,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let val = match json.as_array() {
+            Some(v) => v[0].clone(),
+            None => panic!("Something went wrong")
+        };
+        let val = &val["event_name"];
+        match &val.as_str() {
+            Some(s) => s.to_string(),
             None => panic!("Something went wrong")
         }
     }
@@ -483,7 +585,7 @@ impl Season {
             Season::SkyStone => 1920,
             Season::RoverRuckus => 1819,
             Season::RelicRecovery => 1718,
-            Season::VelocityVortex => 1617
+            Season::VelocityVortex => 1617,
         }
     }
     #[doc(hidden)]
@@ -493,7 +595,7 @@ impl Season {
             "1819" => Season::RoverRuckus,
             "1718" => Season::RelicRecovery,
             "1617" => Season::VelocityVortex,
-            _ => panic!("That season does not exist in the TOA database.")
+            _ => panic!("That season does not exist in the TOA database."),
         }
     }
 }
@@ -504,7 +606,7 @@ impl std::fmt::Display for Season {
             Season::SkyStone => write!(f, "Season::SkyStone"),
             Season::RoverRuckus => write!(f, "Season::RoverRuckus"),
             Season::RelicRecovery => write!(f, "Season::RelicRecovery"),
-            Season::VelocityVortex => write!(f, "Season::VelocityVortex")
+            Season::VelocityVortex => write!(f, "Season::VelocityVortex"),
         }
     }
 }

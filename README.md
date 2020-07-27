@@ -4,7 +4,7 @@
 [![crates.io](https://img.shields.io/crates/v/rustoa.svg)](https://crates.io/crates/rustoa)
 [![Documentation](https://docs.rs/rustoa/badge.svg)](https://docs.rs/rustoa)
 [![MIT licensed](https://img.shields.io/crates/l/rustoa.svg)](./LICENSE.md)
-[![Build Status](http://ci.karx.xyz/buildStatus/icon?job=rustoa)](http://ci.karx.xyz/job/rustoa/)
+[![Build Status](https://ci.karx.xyz/buildStatus/icon?job=rustoa)](https://ci.karx.xyz/job/rustoa/)
 
 Rust bindings to The Orange Alliance API
 
@@ -13,7 +13,7 @@ A Crate to access The Orange Alliance API. This crate makes it easy to access th
 Install by adding
 ```toml
 [dependecies]
-rustoa = "0.1.5"
+rustoa = "0.1.6"
 ```
 
 to your `Cargo.toml` file.
