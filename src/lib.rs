@@ -13,7 +13,7 @@ use std::collections::HashMap;
 ///
 /// You can use the [Client](struct.Client.html) to get the API version
 /// and create a [Team](struct.Team.html) object.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Client {
     api_key: String,
     application_name: String,
@@ -466,6 +466,96 @@ impl Team {
         match data.get("np_opr") {
             Some(d) => d.clone(),
             None => panic!("Something went wrong"),
+        }
+    }
+
+    pub fn events(&self, season: Season) -> HashMap<String, Event, RandomState> {
+        let resp = match self.client.request(&format!("/team/{}/events/{}", self.team_number, season.value())[..]) {
+            Ok(r) => match r.text() {
+                Ok(t) => t,
+                Err(e) => panic!("Something went wrong: {}", e)
+            },
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        let json: serde_json::Value = match serde_json::from_str(&*resp) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match json.as_array() {
+            Some(m) => m,
+            None => panic!("Something went wrong")
+        };
+
+        let mut keys = Vec::new();
+
+        for val in map.iter() {
+            let key = match val["event_key"].as_str() {
+                Some(k) => k.to_string(),
+                None => panic!("Something went wrong")
+            };
+            keys.push(key);
+        }
+
+        let mut emap: HashMap<String, Event> = HashMap::new();
+
+        for key in keys.iter() {
+            let event_key = key.clone();
+            let event = Event::new(&*key.clone(), &self.client);
+            let raw_key = event.name();
+            let mut key = raw_key.replace(" ", "_");
+            key = key.to_lowercase();
+            if emap.contains_key(&key[..]) {
+                let re = regex::Regex::new(r"\d{4}-\w+-").unwrap();
+                let raw_key_right = re.replace_all(&event_key[..], "");
+                key = format!("{}_{}", key, raw_key_right.to_lowercase());
+            }
+            emap.insert(key, event);
+        }
+
+        emap
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Event {
+    pub event_key: String,
+    client: Client,
+}
+
+impl Event {
+    pub fn new(event_key: &str, client: &Client) -> Event {
+        let event_key = event_key.to_string();
+        let client = client.clone();
+
+        Event {
+            event_key,
+            client
+        }
+    }
+
+    pub fn name(&self) -> String {
+        let resp = match self.client.request(&*format!("/event/{}", self.event_key)) {
+            Ok(r) => match r.text() {
+                Ok(t) => t,
+                Err(e) => panic!("Something went wrong: {}", e)
+            },
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let json: serde_json::Value = match serde_json::from_str(&resp[..]) {
+            Ok(v) => v,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let val = match json.as_array() {
+            Some(v) => v[0].clone(),
+            None => panic!("Something went wrong")
+        };
+        let val = &val["event_name"];
+        match &val.as_str() {
+            Some(s) => s.to_string(),
+            None => panic!("Something went wrong")
         }
     }
 }
