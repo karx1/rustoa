@@ -558,6 +558,54 @@ impl Event {
             None => panic!("Something went wrong")
         }
     }
+    pub fn properties(&self) -> HashMap<String, String, RandomState> {
+        let resp = match self.client.request(&format!("/event/{}", self.event_key)[..]) {
+            Ok(r) => match r.text() {
+                Ok(t) => t,
+                Err(e) => panic!("Something went wrong: {}", e)
+            },
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let json: serde_json::Value = match serde_json::from_str(&resp[..]) {
+            Ok(v) => v,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match json.as_array() {
+            Some(m) => m,
+            None => panic!("Something went wrong")
+        };
+
+        let val = map[0].clone();
+
+        let new = match val.as_object() {
+            Some(n) => n,
+            None => panic!("Something went wrong")
+        };
+
+        let mut new_map: HashMap<String, String> = HashMap::new();
+
+        for x in new.iter() {
+            let key = x.0.clone();
+            let value = match x.1 {
+                serde_json::Value::String(s) => s.clone(),
+                serde_json::Value::Number(n) => match n.as_u64() {
+                    Some(u) => u.to_string(),
+                    None => panic!("Something went wrong")
+                },
+                serde_json::Value::Null => "null".to_string(),
+                serde_json::Value::Bool(b) => match b {
+                    true => "true".to_string(),
+                    false => "false".to_string()
+                },
+                _ => panic!("Something went wrong")
+            };
+            new_map.insert(key, value);
+        }
+
+        new_map
+    }
 }
 
 /// This enum is used for expressing FTC seasons.
@@ -639,7 +687,7 @@ mod tests {
         assert_eq!(team1.wins(), team2.wins());
         let year1 = match team1.properties().get("rookie_year") {
             Some(y) => y.clone(),
-            None => panic!("Somethign went wrong"),
+            None => panic!("Something went wrong"),
         };
         let year2 = match team2.properties().get("rookie_year") {
             Some(y) => y.clone(),
