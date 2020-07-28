@@ -517,6 +517,10 @@ impl Team {
     }
 }
 
+/// The main class for representation of an FTC event.
+///
+/// Instances of this class should not be created directly;
+/// instead use your [`Team`](struct.Team.html) object.
 #[derive(Clone, Debug)]
 pub struct Event {
     pub event_key: String,
@@ -524,6 +528,7 @@ pub struct Event {
 }
 
 impl Event {
+    #[doc(hidden)]
     pub fn new(event_key: &str, client: &Client) -> Event {
         let event_key = event_key.to_string();
         let client = client.clone();
@@ -533,7 +538,7 @@ impl Event {
             client
         }
     }
-
+    #[doc(hidden)]
     pub fn name(&self) -> String {
         let resp = match self.client.request(&*format!("/event/{}", self.event_key)) {
             Ok(r) => match r.text() {
@@ -558,6 +563,18 @@ impl Event {
             None => panic!("Something went wrong")
         }
     }
+    /// Basic information of the team.
+    ///
+    /// This method takes no arguments.
+    ///
+    /// It returns a `HashMap<String, String>`.
+    ///
+    /// # Panics
+    ///
+    /// This method can panic in the following ways:
+    /// - The HTTP request was not successful
+    /// - The data received from the API was invalid JSON
+    /// - The data received was in the wrong format
     pub fn properties(&self) -> HashMap<String, String, RandomState> {
         let resp = match self.client.request(&format!("/event/{}", self.event_key)[..]) {
             Ok(r) => match r.text() {
@@ -629,6 +646,15 @@ impl Event {
         panic!("Something went wrong");
     }
 
+    /// The specified team's rank at the end of the match.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn rank(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "rank") {
             Ok(o) => o,
@@ -636,6 +662,15 @@ impl Event {
         };
         resp
     }
+    /// The amount of times the team's rank changes during the event.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn rank_change(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "rank_change") {
             Ok(o) => o,
@@ -643,6 +678,15 @@ impl Event {
         };
         resp
     }
+    /// The amount of times within the event that the specified team won a match.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn wins(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "wins") {
             Ok(o) => o,
@@ -650,6 +694,15 @@ impl Event {
         };
         resp
     }
+    /// The amount of times within the event that the specified team lost a match.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn losses(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "losses") {
             Ok(o) => o,
@@ -657,6 +710,15 @@ impl Event {
         };
         resp
     }
+    /// The amount of times within the event that the specified team tied a match.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn ties(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "ties") {
             Ok(o) => o,
@@ -664,6 +726,15 @@ impl Event {
         };
         resp
     }
+    /// The specified team's OPR for this event only. Penalties are factored in.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn opr(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "opr") {
             Ok(o) => o,
@@ -671,6 +742,15 @@ impl Event {
         };
         resp
     }
+    /// The specified team's OPR for this event only. Penaltied are not factored in.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn np_opr(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "np_opr") {
             Ok(o) => o,
@@ -678,6 +758,15 @@ impl Event {
         };
         resp
     }
+    /// The specified team's highest score in a qualifier.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn highest_qualifier_score(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "highest_qual_score") {
             Ok(o) => o,
@@ -685,6 +774,15 @@ impl Event {
         };
         resp
     }
+    /// The specified team's ranking points for this event only.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn ranking_points(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "ranking_points") {
             Ok(o) => o,
@@ -692,6 +790,15 @@ impl Event {
         };
         resp
     }
+    /// The specified team's qualifying points for this event only.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn qualifying_points(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "qualifying_points") {
             Ok(o) => o,
@@ -699,6 +806,15 @@ impl Event {
         };
         resp
     }
+    /// The specified team's tiebreaker points for this event only.
+    ///
+    /// # Arguments
+    ///
+    /// * team_number: `u32` - The number of the team.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the data sent by the API is in the wrong format.
     pub fn tiebreaker_points(&self, team_number: u32) -> f64 {
         let resp = match self.get_rankings_data(team_number, "tie_breaker_points") {
             Ok(o) => o,
