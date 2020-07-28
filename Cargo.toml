@@ -1,6 +1,6 @@
 [package]
 name = "rustoa"
-version = "0.1.6"
+version = "0.1.7"
 description = "Rust bindings to The Orange Alliance API"
 authors = ["Yash Karandikar <nerdstep710@gmail.com>"]
 edition = "2018"
