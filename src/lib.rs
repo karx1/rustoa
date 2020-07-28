@@ -606,6 +606,106 @@ impl Event {
 
         new_map
     }
+    fn get_rankings_data(&self, team_number: u32, query: &str) -> Result<f64, Box<dyn std::error::Error>> {
+        let resp = self.client.request(&*format!("/event/{}/rankings", self.event_key))?;
+        let map: serde_json::Value = serde_json::from_str(&*resp.text()?)?;
+        let arr = match map.as_array() {
+            Some(a) => a,
+            None => panic!("Something went wrong")
+        };
+        for val in arr.iter() {
+            let num = &val["team"]["team_number"];
+            let num = match num.as_f64() {
+                Some(n) => n as u32,
+                None => panic!("Something went wrong")
+            };
+            if num == team_number {
+                match &val[query].as_f64() {
+                    Some(n) => return Ok(n.clone()),
+                    None => continue
+                };
+            }
+        }
+        panic!("Something went wrong");
+    }
+
+    pub fn rank(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "rank") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn rank_change(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "rank_change") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn wins(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "wins") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn losses(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "losses") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn ties(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "ties") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn opr(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "opr") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn np_opr(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "np_opr") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn highest_qualifier_score(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "highest_qual_score") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn ranking_points(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "ranking_points") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn qualifying_points(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "qualifying_points") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn tiebreaker_points(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "tie_breaker_points") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
 }
 
 /// This enum is used for expressing FTC seasons.
