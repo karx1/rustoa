@@ -13,7 +13,7 @@ use std::collections::HashMap;
 ///
 /// You can use the [Client](struct.Client.html) to get the API version
 /// and create a [Team](struct.Team.html) object.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Client {
     api_key: String,
     application_name: String,
@@ -267,7 +267,7 @@ impl Team {
 
         let new_vec = match map.as_array() {
             Some(n) => n.clone(),
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         };
 
         for query in queries.iter() {
@@ -278,7 +278,7 @@ impl Team {
                 let val = &val[&query];
                 let num = match val.as_f64() {
                     Some(n) => n,
-                    None => panic!("Something went wrong")
+                    None => panic!("Something went wrong"),
                 };
                 i += num;
             }
@@ -468,6 +468,244 @@ impl Team {
             None => panic!("Something went wrong"),
         }
     }
+
+    pub fn events(&self, season: Season) -> HashMap<String, Event, RandomState> {
+        let resp = match self.client.request(&format!("/team/{}/events/{}", self.team_number, season.value())[..]) {
+            Ok(r) => match r.text() {
+                Ok(t) => t,
+                Err(e) => panic!("Something went wrong: {}", e)
+            },
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        let json: serde_json::Value = match serde_json::from_str(&*resp) {
+            Ok(m) => m,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match json.as_array() {
+            Some(m) => m,
+            None => panic!("Something went wrong")
+        };
+
+        let mut keys = Vec::new();
+
+        for val in map.iter() {
+            let key = match val["event_key"].as_str() {
+                Some(k) => k.to_string(),
+                None => panic!("Something went wrong")
+            };
+            keys.push(key);
+        }
+
+        let mut emap: HashMap<String, Event> = HashMap::new();
+
+        for key in keys.iter() {
+            let event_key = key.clone();
+            let event = Event::new(&*key.clone(), &self.client);
+            let raw_key = event.name();
+            let mut key = raw_key.replace(" ", "_");
+            key = key.to_lowercase();
+            if emap.contains_key(&key[..]) {
+                let re = regex::Regex::new(r"\d{4}-\w+-").unwrap();
+                let raw_key_right = re.replace_all(&event_key[..], "");
+                key = format!("{}_{}", key, raw_key_right.to_lowercase());
+            }
+            emap.insert(key, event);
+        }
+
+        emap
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Event {
+    pub event_key: String,
+    client: Client,
+}
+
+impl Event {
+    pub fn new(event_key: &str, client: &Client) -> Event {
+        let event_key = event_key.to_string();
+        let client = client.clone();
+
+        Event {
+            event_key,
+            client
+        }
+    }
+
+    pub fn name(&self) -> String {
+        let resp = match self.client.request(&*format!("/event/{}", self.event_key)) {
+            Ok(r) => match r.text() {
+                Ok(t) => t,
+                Err(e) => panic!("Something went wrong: {}", e)
+            },
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let json: serde_json::Value = match serde_json::from_str(&resp[..]) {
+            Ok(v) => v,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let val = match json.as_array() {
+            Some(v) => v[0].clone(),
+            None => panic!("Something went wrong")
+        };
+        let val = &val["event_name"];
+        match &val.as_str() {
+            Some(s) => s.to_string(),
+            None => panic!("Something went wrong")
+        }
+    }
+    pub fn properties(&self) -> HashMap<String, String, RandomState> {
+        let resp = match self.client.request(&format!("/event/{}", self.event_key)[..]) {
+            Ok(r) => match r.text() {
+                Ok(t) => t,
+                Err(e) => panic!("Something went wrong: {}", e)
+            },
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let json: serde_json::Value = match serde_json::from_str(&resp[..]) {
+            Ok(v) => v,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match json.as_array() {
+            Some(m) => m,
+            None => panic!("Something went wrong")
+        };
+
+        let val = map[0].clone();
+
+        let new = match val.as_object() {
+            Some(n) => n,
+            None => panic!("Something went wrong")
+        };
+
+        let mut new_map: HashMap<String, String> = HashMap::new();
+
+        for x in new.iter() {
+            let key = x.0.clone();
+            let value = match x.1 {
+                serde_json::Value::String(s) => s.clone(),
+                serde_json::Value::Number(n) => match n.as_u64() {
+                    Some(u) => u.to_string(),
+                    None => panic!("Something went wrong")
+                },
+                serde_json::Value::Null => "null".to_string(),
+                serde_json::Value::Bool(b) => match b {
+                    true => "true".to_string(),
+                    false => "false".to_string()
+                },
+                _ => panic!("Something went wrong")
+            };
+            new_map.insert(key, value);
+        }
+
+        new_map
+    }
+    fn get_rankings_data(&self, team_number: u32, query: &str) -> Result<f64, Box<dyn std::error::Error>> {
+        let resp = self.client.request(&*format!("/event/{}/rankings", self.event_key))?;
+        let map: serde_json::Value = serde_json::from_str(&*resp.text()?)?;
+        let arr = match map.as_array() {
+            Some(a) => a,
+            None => panic!("Something went wrong")
+        };
+        for val in arr.iter() {
+            let num = &val["team"]["team_number"];
+            let num = match num.as_f64() {
+                Some(n) => n as u32,
+                None => panic!("Something went wrong")
+            };
+            if num == team_number {
+                match &val[query].as_f64() {
+                    Some(n) => return Ok(n.clone()),
+                    None => continue
+                };
+            }
+        }
+        panic!("Something went wrong");
+    }
+
+    pub fn rank(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "rank") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn rank_change(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "rank_change") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn wins(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "wins") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn losses(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "losses") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn ties(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "ties") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn opr(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "opr") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn np_opr(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "np_opr") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn highest_qualifier_score(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "highest_qual_score") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn ranking_points(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "ranking_points") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn qualifying_points(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "qualifying_points") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
+    pub fn tiebreaker_points(&self, team_number: u32) -> f64 {
+        let resp = match self.get_rankings_data(team_number, "tie_breaker_points") {
+            Ok(o) => o,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+        resp
+    }
 }
 
 /// This enum is used for expressing FTC seasons.
@@ -549,13 +787,22 @@ mod tests {
         assert_eq!(team1.wins(), team2.wins());
         let year1 = match team1.properties().get("rookie_year") {
             Some(y) => y.clone(),
-            None => panic!("Somethign went wrong"),
+            None => panic!("Something went wrong"),
         };
         let year2 = match team2.properties().get("rookie_year") {
             Some(y) => y.clone(),
             None => panic!("Something went wrong"),
         };
         assert_eq!(year1, year2);
+        let event1 = match team1.events(super::Season::SkyStone).get("trinity_river_qualifier") {
+            Some(e) => e.clone(),
+            None => panic!("No value was found")
+        };
+        let event2 = match team2.events(super::Season::SkyStone).get("trinity_river_qualifier") {
+            Some(e) => e.clone(),
+            None => panic!("No value was found")
+        };
+        assert_eq!(event1.name(), event2.name());
     }
     #[test]
     fn check_numbers() {
@@ -579,5 +826,16 @@ mod tests {
     fn test_season() {
         let season = super::Season::SkyStone;
         assert_eq!(season.value(), 1920);
+    }
+
+    #[test]
+    fn test_event_name() {
+        let client = create_client();
+        let team = client.team(16405);
+        let event = match team.events(super::Season::SkyStone).get("trinity_river_qualifier") {
+            Some(e) => e.clone(),
+            None => panic!("No value was found")
+        };
+        assert_eq!("Trinity River Qualifier".to_string(), event.name());
     }
 }
