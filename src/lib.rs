@@ -919,6 +919,7 @@ mod tests {
             None => panic!("No value was found")
         };
         assert_eq!(event1.name(), event2.name());
+        assert_eq!(event1.opr(16405), event2.opr(16405));
     }
     #[test]
     fn check_numbers() {
@@ -945,13 +946,18 @@ mod tests {
     }
 
     #[test]
-    fn test_event_name() {
+    fn test_event() {
         let client = create_client();
         let team = client.team(16405);
         let event = match team.events(super::Season::SkyStone).get("trinity_river_qualifier") {
             Some(e) => e.clone(),
             None => panic!("No value was found")
         };
-        assert_eq!("Trinity River Qualifier".to_string(), event.name());
+        let name1 = event.name();
+        let name2 = match event.properties().get("event_name") {
+            Some(n) => n.clone(),
+            None => panic!("Something went wrong")
+        };
+        assert_eq!(name1, name2);
     }
 }
