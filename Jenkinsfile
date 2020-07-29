@@ -25,16 +25,6 @@ pipeline {
 				}
 			}
 		}
-		stage('Nightly') {
-			agent {
-				docker { image 'rustlang/rust:nightly' }
-			}
-			steps {
-				withCredentials([string(credentialsId: 'toa-key', variable: 'API_KEY')]) {
-					sh 'cargo test || true'
-				}
-			}
-		}
 	}
 	post {
 		success {
