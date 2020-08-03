@@ -263,7 +263,6 @@ impl Team {
             .client
             .request(&format!("/team/{}/results/{}", self.team_number, season)[..])?;
         let map: serde_json::Value = serde_json::from_str(&*resp.text()?)?;
-        let mut new_map: HashMap<String, f64> = HashMap::new();
 
         let arr = match map.as_array() {
             Some(a) => a,
