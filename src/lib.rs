@@ -114,24 +114,26 @@ impl Team {
             team_number,
         }
     }
+    fn get_wlt(&self) -> HashMap<String, u32, RandomState> {
+        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+            Ok(r) => r,
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        let map = match resp.json::<Vec<HashMap<String, u32>>>() {
+            Ok(m) => m[0].clone(),
+            Err(e) => panic!("Something went wrong: {}", e)
+        };
+
+        map
+    }
     /// The total amount of times the team has won a match.
     ///
     /// This method takes no arguments.
     ///
     /// It returns a `u32` integer.
     pub fn wins(&self) -> u32 {
-        let resp = match self
-            .client
-            .request(&format!("/team/{}/wlt", self.team_number)[..])
-        {
-            Ok(resp) => resp,
-            Err(e) => panic!("Something went wrong: {}", e),
-        };
-
-        let map = match resp.json::<Vec<HashMap<String, u32>>>() {
-            Ok(m) => m[0].clone(),
-            Err(e) => panic!("Something went wrong: {}", e),
-        };
+        let map = self.get_wlt();
 
         match map.get("wins") {
             Some(w) => w.clone(),
@@ -144,18 +146,7 @@ impl Team {
     ///
     /// It returns a `u32` integer.
     pub fn losses(&self) -> u32 {
-        let resp = match self
-            .client
-            .request(&format!("/team/{}/wlt", self.team_number)[..])
-        {
-            Ok(resp) => resp,
-            Err(e) => panic!("Something went wrong: {}", e),
-        };
-
-        let map = match resp.json::<Vec<HashMap<String, u32>>>() {
-            Ok(m) => m[0].clone(),
-            Err(e) => panic!("Something went wrong: {}", e),
-        };
+        let map = self.get_wlt();
 
         match map.get("losses") {
             Some(l) => l.clone(),
@@ -168,18 +159,7 @@ impl Team {
     ///
     /// It returns a `u32` integer.
     pub fn ties(&self) -> u32 {
-        let resp = match self
-            .client
-            .request(&format!("/team/{}/wlt", self.team_number)[..])
-        {
-            Ok(resp) => resp,
-            Err(e) => panic!("Something went wrong: {}", e),
-        };
-
-        let map = match resp.json::<Vec<HashMap<String, u32>>>() {
-            Ok(m) => m[0].clone(),
-            Err(e) => panic!("Something went wrong: {}", e),
-        };
+        let map = self.get_wlt();
 
         match map.get("ties") {
             Some(t) => t.clone(),
