@@ -256,37 +256,32 @@ impl Team {
     fn get_season_data(
         &self,
         season: Season,
-    ) -> Result<HashMap<String, f64, RandomState>, Box<dyn std::error::Error>> {
+        query: &str
+    ) -> Result<f64, Box<dyn std::error::Error>> {
         let season = season.value();
         let resp = self
             .client
             .request(&format!("/team/{}/results/{}", self.team_number, season)[..])?;
         let map: serde_json::Value = serde_json::from_str(&*resp.text()?)?;
-        let queries = vec!["wins", "losses", "ties", "opr", "np_opr"];
         let mut new_map: HashMap<String, f64> = HashMap::new();
 
-        let new_vec = match map.as_array() {
-            Some(n) => n.clone(),
-            None => panic!("Something went wrong"),
+        let arr = match map.as_array() {
+            Some(a) => a,
+            None => panic!("Something went wrong")
         };
-
-        for query in queries.iter() {
-            let query = query.to_string();
-            let mut i = 0 as f64;
-            for val in new_vec.iter() {
-                let val = val.clone();
-                let val = &val[&query];
-                let num = match val.as_f64() {
-                    Some(n) => n,
-                    None => panic!("Something went wrong"),
-                };
-                i += num;
-            }
-            i = (i * 100.0).round() / 100.0;
-            new_map.insert(query, i);
+        let query = query.to_string();
+        let mut i = 0 as f64;
+        for val in arr.iter() {
+            let val = val.clone();
+            let val = &val[&query];
+            let num = match val.as_f64() {
+                Some(n) => n,
+                None => panic!("Something went wrong")
+            };
+            i += num;
         }
-
-        Ok(new_map)
+        i = (i * 100.0).round() / 100.0;
+        Ok(i)
     }
 
     /// The amount of times the team has won in a particular season
@@ -299,15 +294,12 @@ impl Team {
     ///
     /// This method will panic if the data sent by the API was in the wrong format.
     pub fn season_wins(&self, season: Season) -> f64 {
-        let data = match self.get_season_data(season) {
+        let data = match self.get_season_data(season, "wins") {
             Ok(m) => m,
             Err(e) => panic!("Something went wrong: {}", e),
         };
 
-        match data.get("wins") {
-            Some(d) => d.clone(),
-            None => panic!("Something went wrong"),
-        }
+        data
     }
 
     /// The amount of times the team has lost in a particular season
@@ -320,15 +312,12 @@ impl Team {
     ///
     /// This method will panic if the data sent by the API was in the wrong format.
     pub fn season_losses(&self, season: Season) -> f64 {
-        let data = match self.get_season_data(season) {
+        let data = match self.get_season_data(season, "losses") {
             Ok(m) => m,
             Err(e) => panic!("Something went wrong: {}", e),
         };
 
-        match data.get("losses") {
-            Some(d) => d.clone(),
-            None => panic!("Something went wrong"),
-        }
+        data
     }
 
     /// The amount of times the team has tied a match in a particular season
@@ -341,15 +330,12 @@ impl Team {
     ///
     /// This method will panic if the data sent by the API was in the wrong format.
     pub fn season_ties(&self, season: Season) -> f64 {
-        let data = match self.get_season_data(season) {
+        let data = match self.get_season_data(season, "ties") {
             Ok(m) => m,
             Err(e) => panic!("Something went wrong: {}", e),
         };
 
-        match data.get("ties") {
-            Some(d) => d.clone(),
-            None => panic!("Something went wrong"),
-        }
+        data
     }
 
     /// OPR stands for Offensive Power Rating.
@@ -367,15 +353,12 @@ impl Team {
     ///
     /// This method will panic if the data sent by the API was in the wrong format.
     pub fn opr(&self, season: Season) -> f64 {
-        let data = match self.get_season_data(season) {
+        let data = match self.get_season_data(season, "opr") {
             Ok(m) => m,
             Err(e) => panic!("Something went wrong: {}", e),
         };
 
-        match data.get("opr") {
-            Some(d) => d.clone(),
-            None => panic!("Something went wrong"),
-        }
+        data
     }
 
     /// NP_OPR is the OPR without penalties.
@@ -388,15 +371,12 @@ impl Team {
     ///
     /// This method will panic if the data sent by the API was in the wrong format.
     pub fn np_opr(&self, season: Season) -> f64 {
-        let data = match self.get_season_data(season) {
+        let data = match self.get_season_data(season, "np_opr") {
             Ok(m) => m,
             Err(e) => panic!("Something went wrong: {}", e),
         };
 
-        match data.get("np_opr") {
-            Some(d) => d.clone(),
-            None => panic!("Something went wrong"),
-        }
+        data
     }
 
     /// Ranking points are the number of points scored by the
@@ -413,15 +393,12 @@ impl Team {
     ///
     /// This method will panic if the data sent by the API was in the wrong format.
     pub fn ranking_points(&self, season: Season) -> f64 {
-        let data = match self.get_season_data(season) {
+        let data = match self.get_season_data(season, "ranking_points") {
             Ok(m) => m,
             Err(e) => panic!("Something went wrong: {}", e),
         };
 
-        match data.get("ranking_points") {
-            Some(d) => d.clone(),
-            None => panic!("Something went wrong"),
-        }
+        data
     }
 
     /// Winning teams of a qualifying match each receive 2 QP.
@@ -436,15 +413,12 @@ impl Team {
     ///
     /// This method will panic if the data sent by the API was in the wrong format.
     pub fn qualifying_points(&self, season: Season) -> f64 {
-        let data = match self.get_season_data(season) {
+        let data = match self.get_season_data(season, "qualifying_points") {
             Ok(m) => m,
             Err(e) => panic!("Something went wrong: {}", e),
         };
 
-        match data.get("qualifying_points") {
-            Some(d) => d.clone(),
-            None => panic!("Something went wrong"),
-        }
+        data
     }
 
     /// Tiebreaker points are the pre-penalty score of the losing alliance for each match.
@@ -458,15 +432,12 @@ impl Team {
     ///
     /// This method will panic if the data sent by the API was in the wrong format.
     pub fn tiebreaker_points(&self, season: Season) -> f64 {
-        let data = match self.get_season_data(season) {
+        let data = match self.get_season_data(season, "tie_breaker_points") {
             Ok(m) => m,
             Err(e) => panic!("Something went wrong: {}", e),
         };
 
-        match data.get("np_opr") {
-            Some(d) => d.clone(),
-            None => panic!("Something went wrong"),
-        }
+        data
     }
 
     pub fn events(&self, season: Season) -> HashMap<String, Event, RandomState> {
