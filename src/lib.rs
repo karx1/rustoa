@@ -115,14 +115,17 @@ impl Team {
         }
     }
     fn get_wlt(&self) -> HashMap<String, u32, RandomState> {
-        let resp = match self.client.request(&format!("/team/{}/wlt", self.team_number)[..]) {
+        let resp = match self
+            .client
+            .request(&format!("/team/{}/wlt", self.team_number)[..])
+        {
             Ok(r) => r,
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         let map = match resp.json::<Vec<HashMap<String, u32>>>() {
             Ok(m) => m[0].clone(),
-            Err(e) => panic!("Something went wrong: {}", e)
+            Err(e) => panic!("Something went wrong: {}", e),
         };
 
         map
@@ -236,7 +239,7 @@ impl Team {
     fn get_season_data(
         &self,
         season: Season,
-        query: &str
+        query: &str,
     ) -> Result<f64, Box<dyn std::error::Error>> {
         let season = season.value();
         let resp = self
@@ -246,7 +249,7 @@ impl Team {
 
         let arr = match map.as_array() {
             Some(a) => a,
-            None => panic!("Something went wrong")
+            None => panic!("Something went wrong"),
         };
         let query = query.to_string();
         let mut i = 0 as f64;
@@ -255,7 +258,7 @@ impl Team {
             let val = &val[&query];
             let num = match val.as_f64() {
                 Some(n) => n,
-                None => panic!("Something went wrong")
+                None => panic!("Something went wrong"),
             };
             i += num;
         }
